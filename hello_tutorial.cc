@@ -43,6 +43,7 @@
 #include <taglib/mpegfile.h>
 #include <taglib/id3v2tag.h>
 
+#include <sparsehash/sparsetable>
 
 using pp::URLLoader;
 using pp::URLRequestInfo;
@@ -141,6 +142,7 @@ class GoogleDriveStream : public TagLib::IOStream {
   long cursor_;
   pp::InstanceHandle instance_;
   CompletionCallbackFactory<GoogleDriveStream> factory_;
+  google::sparsetable<char> cache_;
 };
 
 GoogleDriveStream::GoogleDriveStream(
