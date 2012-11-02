@@ -1,0 +1,9 @@
+application: clementine-web
+version: dev
+runtime: python27
+threadsafe: yes
+api_version: 1
+
+handlers:
+- url: /
+  static_dir: static

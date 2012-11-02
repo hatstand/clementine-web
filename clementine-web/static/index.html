@@ -1,0 +1,27 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="Content-type" content="text/html;charset=UTF-8">
+    <script type="text/javascript" src="player.js"></script>
+    <script type="text/javascript"
+      src="https://apis.google.com/js/client.js?onload=handleClientLoad">
+    </script>
+  </head>
+  <body>
+    <div id="songs">
+      <div>Songs</div>
+    </div>
+    <input type="button" id="authorizeButton" value="Authorise" />
+    <div>
+      <audio id="player" controls></audio>
+    </div>
+    <div id="listener">
+      <!-- TODO: Use multiple modules and cope with crashes. -->
+      <embed name="nacl_module"
+          id="nacl"
+          width=0 height=0
+          src="hello_tutorial.nmf"
+          type="application/x-nacl" />
+    </div>
+  </body>
+</html>

@@ -1,0 +1,15 @@
+{
+  "name": "Clementine",
+  "version": "1.0",
+  "manifest_version": 2,
+  "description": "Clementine",
+  "permissions": [
+    "https://*.googleusercontent.com/",
+    "unlimitedStorage"
+  ],
+  "browser_action": {
+    "default_popup": "shim.html"
+  },
+  "content_security_policy":
+      "script-src 'self' https://apis.google.com; object-src 'self'"
+}
