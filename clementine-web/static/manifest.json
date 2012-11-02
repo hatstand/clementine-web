@@ -8,6 +8,7 @@
     "unlimitedStorage"
   ],
   "browser_action": {
+    "default_icon": "logo.png",
     "default_popup": "shim.html"
   },
   "content_security_policy":
