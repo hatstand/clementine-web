@@ -16,7 +16,7 @@
 # the rest of the makefile is boilerplate for defining build rules.
 #
 PROJECT:=hello_tutorial
-LDFLAGS:=-lppapi_cpp -lppapi -L/usr/local/google/home/johnmaguire/build/nacl/lib64 -ltag
+LDFLAGS:=-lppapi_cpp -lppapi -L/usr/local/google/home/johnmaguire/build/nacl/lib64 -L/usr/local/google/home/johnmaguire/build/nacl/lib -ltag
 JSON_CPP_SOURCES:=lib_json/json_reader.cc lib_json/json_writer.cc lib_json/json_value.cc
 CXX_SOURCES:=coroutines.cc google_drive_stream.cc hello_tutorial.cc $(JSON_CPP_SOURCES)
 
@@ -51,7 +51,7 @@ export CYGWIN
 
 
 # Declare the ALL target first, to make the 'all' target the default build
-all: $(PROJECT)_x86_64.nexe
+all: $(PROJECT)_x86_64.nexe $(PROJECT)_x86_32.nexe
 
 # Define 32 bit compile and link rules for main application
 x86_32_OBJS:=$(patsubst %.cc,%_32.o,$(CXX_SOURCES))
