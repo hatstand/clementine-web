@@ -32,6 +32,9 @@ vector<string> Split(string s, char delim) {
   return split;
 }
 
+static const int kTaglibPrefixCacheBytes = 64 * 1024;
+static const int kTaglibSuffixCacheBytes = 8 * 1024;
+
 }  // namespace
 
 GoogleDriveStream::GoogleDriveStream(
@@ -42,7 +45,8 @@ GoogleDriveStream::GoogleDriveStream(
     length_(length),
     cursor_(0),
     instance_(instance),
-    factory_(this) {
+    factory_(this),
+    cache_(length) {
   Log(__PRETTY_FUNCTION__);
 }
 
@@ -64,10 +68,15 @@ TagLib::ByteVector GoogleDriveStream::readBlock(ulong length) {
   const int start = cursor_;
   const int end = start + length - 1;
 
-  char h[1024];
-  snprintf(h, sizeof(h), "%d", instance_.pp_instance());
+  if (end < start) {
+    return TagLib::ByteVector();
+  }
 
-  Log(h);
+  if (CheckCache(start, end)) {
+    TagLib::ByteVector cached = GetCached(start, end);
+    cursor_ += cached.size();
+    return cached;
+  }
 
   URLRequestInfo request(instance_);
   if (request.is_null()) {
@@ -123,6 +132,9 @@ TagLib::ByteVector GoogleDriveStream::readBlock(ulong length) {
   TagLib::ByteVector bytes(response_buffer, response_length);
   delete[] response_buffer;
   cursor_ += bytes.size();
+
+  FillCache(start, bytes);
+
   return bytes;
 }
 
@@ -169,4 +181,36 @@ long GoogleDriveStream::tell() const {
 long GoogleDriveStream::length() {
   Log(__PRETTY_FUNCTION__);
   return length_;
+}
+
+bool GoogleDriveStream::CheckCache(int start, int end) {
+  for (int i = start; i <= end; ++i) {
+    if (!cache_.test(i)) {
+      return false;
+    }
+  }
+  return true;
+}
+
+void GoogleDriveStream::FillCache(int start, TagLib::ByteVector data) {
+  for (uint i = 0; i < data.size(); ++i) {
+    cache_.set(start + i, data[i]);
+  }
+}
+
+TagLib::ByteVector GoogleDriveStream::GetCached(int start, int end) {
+  const uint size = end - start + 1;
+  TagLib::ByteVector ret(size);
+  for (uint i = 0; i < size; ++i) {
+    ret[i] = cache_.get(start + i);
+  }
+  return ret;
+}
+
+void GoogleDriveStream::Precache() {
+  clear();
+  readBlock(kTaglibPrefixCacheBytes);
+  seek(kTaglibSuffixCacheBytes, TagLib::IOStream::End);
+  readBlock(kTaglibSuffixCacheBytes);
+  clear();
 }

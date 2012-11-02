@@ -28,9 +28,15 @@ class GoogleDriveStream : public TagLib::IOStream {
   virtual long length();
   virtual void truncate(long) {};
 
+  void Precache();
+
  private:
   void Log(const std::string& message);
   void ReallyLog(int32_t, const std::string& message);
+
+  bool CheckCache(int start, int end);
+  void FillCache(int start, TagLib::ByteVector data);
+  TagLib::ByteVector GetCached(int start, int end);
 
   static void LoadFinished(void*, int32_t);
 

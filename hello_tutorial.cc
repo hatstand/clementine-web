@@ -112,7 +112,7 @@ class HelloTutorialInstance : public pp::Instance {
         job->url,
         job->length,
         job->instance);
-    (void)stream;
+    stream->Precache();
 
     TagLib::ID3v2::FrameFactory* factory =
         TagLib::ID3v2::FrameFactory::instance();
