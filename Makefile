@@ -17,7 +17,7 @@
 #
 PROJECT:=hello_tutorial
 LDFLAGS:=-lppapi_cpp -lppapi -L/usr/local/google/home/johnmaguire/build/nacl/lib64 -ltag
-CXX_SOURCES:=$(PROJECT).cc
+CXX_SOURCES:=coroutines.cc google_drive_stream.cc hello_tutorial.cc
 
 
 #
