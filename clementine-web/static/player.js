@@ -185,10 +185,13 @@ document.addEventListener('DOMContentLoaded', function() {
   button.addEventListener('click', authorize);
 
   var request = webkitIndexedDB.open('clementine');
+  console.log('Opening DB');
   request.onsuccess = function(event) {
     db = this.result;
-    var version_request = db.setVersion("1.0");
-    version_request.onupgradeversion = function(e) {
+    var version_request = db.setVersion("2.0")
+    console.log('Version request');
+    version_request.onsuccess = function(e) {
+      console.log('Successful version request');
       store = db.createObjectStore('songs', {keyPath: 'id'});
     };
   };
