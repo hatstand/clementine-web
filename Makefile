@@ -17,7 +17,8 @@
 #
 PROJECT:=hello_tutorial
 LDFLAGS:=-lppapi_cpp -lppapi -L/usr/local/google/home/johnmaguire/build/nacl/lib64 -ltag
-CXX_SOURCES:=coroutines.cc google_drive_stream.cc hello_tutorial.cc
+JSON_CPP_SOURCES:=lib_json/json_reader.cc lib_json/json_writer.cc lib_json/json_value.cc
+CXX_SOURCES:=coroutines.cc google_drive_stream.cc hello_tutorial.cc $(JSON_CPP_SOURCES)
 
 
 #
@@ -30,8 +31,8 @@ THIS_MAKEFILE:=$(abspath $(lastword $(MAKEFILE_LIST)))
 NACL_SDK_ROOT?=$(abspath $(dir $(THIS_MAKEFILE))../..)
 
 # Project Build flags
-INCLUDES:=-I/usr/local/google/home/johnmaguire/build/nacl/include
-WARNINGS:=-Wno-long-long -Wall -Wswitch-enum -pedantic -Werror
+INCLUDES:=-I/usr/local/google/home/johnmaguire/build/nacl/include -I.
+WARNINGS:=-Wno-long-long -Wall -Werror
 CXXFLAGS:=-pthread -std=gnu++98 $(WARNINGS) $(INCLUDES)
 
 #

@@ -39,11 +39,17 @@
 #include "ppapi/cpp/var.h"
 #include "ppapi/utility/completion_callback_factory.h"
 
+#include <taglib/mp4file.h>
 #include <taglib/mpegfile.h>
 #include <taglib/id3v2tag.h>
 
+#include <json/reader.h>
+#include <json/writer.h>
+
 #include "coroutines.h"
 #include "google_drive_stream.h"
+
+using std::string;
 
 using pp::CompletionCallbackFactory;
 
@@ -51,9 +57,11 @@ class HelloTutorialInstance;
 struct Job {
   Job() : instance(NULL) {}
   pp::InstanceHandle instance;
-  std::string url;
+  string url;
   int length;
   HelloTutorialInstance* iface;
+  string id;
+  string filename;
 };
 
 
@@ -92,14 +100,24 @@ class HelloTutorialInstance : public pp::Instance {
       return;
     }
 
-    PostMessage("About to tag:");
-    PostMessage(var_message.AsString());
+    Json::Value root;
+    Json::Reader reader;
+    bool ok = reader.parse(var_message.AsString(), root);
+    if (!ok) {
+      PostMessage("Error");
+      return;
+    }
+
+    string url = root["url"].asString();
+    int length = root["length"].asInt();
 
     Job* job = new Job;
     job->instance = this;
-    job->url = var_message.AsString();
-    job->length = 10468677;
+    job->url = url;
+    job->length = length;
     job->iface = this;
+    job->id = root["id"].asString();
+    job->filename = root["filename"].asString();
 
     coroutine::Create(HelloTutorialInstance::TagFile, job);
   }
@@ -118,9 +136,20 @@ class HelloTutorialInstance : public pp::Instance {
         TagLib::ID3v2::FrameFactory::instance();
 
     TagLib::MPEG::File tag(
-        stream, factory, TagLib::AudioProperties::Accurate);
+          stream, factory, TagLib::AudioProperties::Accurate);
 
-    job->iface->PostMessage(tag.tag()->title().to8Bit(true));
+    Json::FastWriter writer;
+    Json::Value root;
+    root["id"] = job->id;
+    root["filename"] = job->filename;
+
+    if (tag.tag()) {
+      root["title"] = tag.tag()->title().to8Bit(true);
+      root["artist"] = tag.tag()->artist().to8Bit(true);
+      root["album"] = tag.tag()->album().to8Bit(true);
+    }
+
+    job->iface->PostMessage(writer.write(root));
 
     delete job;
 

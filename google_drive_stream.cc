@@ -32,7 +32,7 @@ vector<string> Split(string s, char delim) {
   return split;
 }
 
-static const int kTaglibPrefixCacheBytes = 64 * 1024;
+static const int kTaglibPrefixCacheBytes = 70 * 1024;
 static const int kTaglibSuffixCacheBytes = 8 * 1024;
 
 }  // namespace
@@ -47,7 +47,6 @@ GoogleDriveStream::GoogleDriveStream(
     instance_(instance),
     factory_(this),
     cache_(length) {
-  Log(__PRETTY_FUNCTION__);
 }
 
 void GoogleDriveStream::Log(const string& message) {
@@ -64,7 +63,6 @@ TagLib::FileName GoogleDriveStream::name() const {
 }
 
 TagLib::ByteVector GoogleDriveStream::readBlock(ulong length) {
-  Log(__PRETTY_FUNCTION__);
   const int start = cursor_;
   const int end = start + length - 1;
 
@@ -88,14 +86,9 @@ TagLib::ByteVector GoogleDriveStream::readBlock(ulong length) {
   snprintf(buffer, sizeof(buffer), "Range: bytes=%d-%d", start, end);
   request.SetHeaders(buffer);
 
-  Log(buffer);
-
   URLLoader* loader = new URLLoader(instance_);
   int32_t ret = loader->Open(request, pp::CompletionCallback(&GoogleDriveStream::LoadFinished, NULL));
   if (ret != PP_OK_COMPLETIONPENDING) {
-    char log_buffer[1024];
-    snprintf(log_buffer, sizeof(log_buffer), "Error: %d", ret);
-    Log(string(log_buffer));
     return TagLib::ByteVector();
   }
 
@@ -113,17 +106,10 @@ TagLib::ByteVector GoogleDriveStream::readBlock(ulong length) {
   string length_header = headers["Content-Length"];
   int response_length = atoi(length_header.c_str());
 
-  char log_buffer[1024];
-  snprintf(log_buffer, sizeof(log_buffer), "Read: %d/%ld", response_length, length);
-  Log(string(log_buffer));
-
   char* response_buffer = new char[response_length];
   ret = loader->ReadResponseBody(
       response_buffer, response_length, pp::CompletionCallback(&GoogleDriveStream::LoadFinished, this));
   if (ret != PP_OK_COMPLETIONPENDING) {
-    char log_buffer[1024];
-    snprintf(log_buffer, sizeof(log_buffer), "Error: %d", ret);
-    Log(string(log_buffer));
     return TagLib::ByteVector();
   }
 
@@ -139,18 +125,10 @@ TagLib::ByteVector GoogleDriveStream::readBlock(ulong length) {
 }
 
 void GoogleDriveStream::LoadFinished(void* me, int32_t ret) {
-  if (me) {
-    GoogleDriveStream* instance = reinterpret_cast<GoogleDriveStream*>(me);
-    char log_buffer[1024];
-    snprintf(log_buffer, sizeof(log_buffer), "Error: %d", ret);
-    instance->Log(string(log_buffer));
-  }
   coroutine::Resume();
 }
 
 void GoogleDriveStream::seek(long offset, TagLib::IOStream::Position p) {
-  Log(__PRETTY_FUNCTION__);
-  int old_cursor = cursor_;
   switch (p) {
     case TagLib::IOStream::Beginning:
       cursor_ = offset;
@@ -164,13 +142,9 @@ void GoogleDriveStream::seek(long offset, TagLib::IOStream::Position p) {
       cursor_ = length() - abs(offset);
       break;
   }
-  char buffer[1024];
-  snprintf(buffer, sizeof(buffer), "%d %ld %ld %d", old_cursor, offset, cursor_, p);
-  Log(string(buffer));
 }
 
 void GoogleDriveStream::clear() {
-  Log(__PRETTY_FUNCTION__);
   cursor_ = 0;
 }
 
@@ -179,7 +153,6 @@ long GoogleDriveStream::tell() const {
 }
 
 long GoogleDriveStream::length() {
-  Log(__PRETTY_FUNCTION__);
   return length_;
 }
 
